@@ -90,17 +90,17 @@ export default function NewRecipePage() {
 
     setLoading(true)
     try {
-      const formData = new FormData()
-      formData.append('file', file)
+      const uploadFormData = new FormData()
+      uploadFormData.append('file', file)
 
       const res = await fetch('/api/upload', {
         method: 'POST',
-        body: formData,
+        body: uploadFormData,
       })
 
       if (res.ok) {
         const data = await res.json()
-        setFormData({ ...formData, image_url: data.url })
+        setFormData((prev) => ({ ...prev, image_url: data.url }))
       } else {
         alert('Failed to upload image')
       }
