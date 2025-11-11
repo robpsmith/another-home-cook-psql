@@ -3,12 +3,14 @@
 import { useState } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
-import { Nav } from '@/components/nav'
+import Link from 'next/link'
+import { PageLayout } from '@/components/layout/PageLayout'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { ArrowLeft, Plus, X, Image as ImageIcon } from 'lucide-react'
 
 export default function NewRecipePage() {
   const { isSignedIn, isLoaded } = useUser()
@@ -140,29 +142,43 @@ export default function NewRecipePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Nav />
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
-        <h1 className="text-4xl font-bold mb-8">Create New Recipe</h1>
+    <PageLayout maxWidth="narrow" className="!py-0">
+      {/* Back Button */}
+      <div className="py-6">
+        <Link href="/admin">
+          <Button variant="ghost" className="gap-2 -ml-2">
+            <ArrowLeft className="h-4 w-4" />
+            Back to Dashboard
+          </Button>
+        </Link>
+      </div>
 
-        <form onSubmit={handleSubmit}>
-          <Card className="mb-6">
+      <div className="pb-12">
+        <h1 className="mb-2">Create New Recipe</h1>
+        <p className="text-neutral-600 mb-8">Share your culinary creation with the world</p>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Basic Information */}
+          <Card className="border-neutral-200 shadow-sm">
             <CardHeader>
-              <CardTitle>Basic Information</CardTitle>
+              <CardTitle className="text-xl">Basic Information</CardTitle>
+              <p className="text-sm text-neutral-600 mt-1">Give your recipe a name and description</p>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="title">Title *</Label>
+                <Label htmlFor="title" className="text-neutral-700">Recipe Title *</Label>
                 <Input
                   id="title"
                   value={formData.title}
                   onChange={handleTitleChange}
                   required
+                  placeholder="e.g., Classic Chocolate Chip Cookies"
+                  className="mt-1.5"
                 />
               </div>
 
               <div>
-                <Label htmlFor="slug">Slug *</Label>
+                <Label htmlFor="slug" className="text-neutral-700">URL Slug *</Label>
                 <Input
                   id="slug"
                   value={formData.slug}
@@ -170,11 +186,14 @@ export default function NewRecipePage() {
                     setFormData({ ...formData, slug: e.target.value })
                   }
                   required
+                  placeholder="e.g., classic-chocolate-chip-cookies"
+                  className="mt-1.5"
                 />
+                <p className="text-xs text-neutral-500 mt-1">This will be part of the recipe URL</p>
               </div>
 
               <div>
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description" className="text-neutral-700">Description</Label>
                 <Textarea
                   id="description"
                   value={formData.description}
@@ -182,12 +201,14 @@ export default function NewRecipePage() {
                     setFormData({ ...formData, description: e.target.value })
                   }
                   rows={3}
+                  placeholder="A brief description of your recipe..."
+                  className="mt-1.5"
                 />
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <Label htmlFor="prep_time_min">Prep Time (min)</Label>
+                  <Label htmlFor="prep_time_min" className="text-neutral-700">Prep Time (min)</Label>
                   <Input
                     id="prep_time_min"
                     type="number"
@@ -198,11 +219,13 @@ export default function NewRecipePage() {
                         prep_time_min: e.target.value,
                       })
                     }
+                    placeholder="15"
+                    className="mt-1.5"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="cook_time_min">Cook Time (min)</Label>
+                  <Label htmlFor="cook_time_min" className="text-neutral-700">Cook Time (min)</Label>
                   <Input
                     id="cook_time_min"
                     type="number"
@@ -213,46 +236,59 @@ export default function NewRecipePage() {
                         cook_time_min: e.target.value,
                       })
                     }
+                    placeholder="30"
+                    className="mt-1.5"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="servings">Servings</Label>
+                  <Label htmlFor="servings" className="text-neutral-700">Servings</Label>
                   <Input
                     id="servings"
                     value={formData.servings}
                     onChange={(e) =>
                       setFormData({ ...formData, servings: e.target.value })
                     }
+                    placeholder="4"
+                    className="mt-1.5"
                   />
                 </div>
               </div>
 
               <div>
-                <Label htmlFor="image">Image</Label>
+                <Label htmlFor="image" className="text-neutral-700">Recipe Image</Label>
                 <Input
                   id="image"
                   type="file"
                   accept="image/*"
                   onChange={handleImageUpload}
                   disabled={loading}
+                  className="mt-1.5"
                 />
                 {formData.image_url && (
-                  <div className="mt-2">
+                  <div className="mt-4">
                     <img
                       src={formData.image_url}
                       alt="Preview"
-                      className="h-32 w-32 object-cover rounded"
+                      className="h-48 w-full object-cover rounded-lg"
                     />
+                  </div>
+                )}
+                {!formData.image_url && (
+                  <div className="mt-4 border-2 border-dashed border-neutral-200 rounded-lg p-8 text-center">
+                    <ImageIcon className="h-12 w-12 mx-auto text-neutral-400 mb-2" />
+                    <p className="text-sm text-neutral-500">Upload an image to showcase your recipe</p>
                   </div>
                 )}
               </div>
             </CardContent>
           </Card>
 
-          <Card className="mb-6">
+          {/* Ingredients */}
+          <Card className="border-neutral-200 shadow-sm">
             <CardHeader>
-              <CardTitle>Ingredients</CardTitle>
+              <CardTitle className="text-xl">Ingredients</CardTitle>
+              <p className="text-sm text-neutral-600 mt-1">List all the ingredients needed</p>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex gap-2">
@@ -265,88 +301,106 @@ export default function NewRecipePage() {
                       addIngredient()
                     }
                   }}
-                  placeholder="Add ingredient (e.g., 2 cups flour)"
+                  placeholder="e.g., 2 cups all-purpose flour"
+                  className="flex-1"
                 />
-                <Button type="button" onClick={addIngredient}>
+                <Button type="button" onClick={addIngredient} className="gap-2">
+                  <Plus className="h-4 w-4" />
                   Add
                 </Button>
               </div>
-              <ul className="space-y-2">
-                {formData.ingredients.map((ingredient, index) => (
-                  <li
-                    key={index}
-                    className="flex items-center justify-between p-2 bg-gray-100 rounded"
-                  >
-                    <span>{ingredient}</span>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeIngredient(index)}
+              {formData.ingredients.length > 0 ? (
+                <ul className="space-y-2">
+                  {formData.ingredients.map((ingredient, index) => (
+                    <li
+                      key={index}
+                      className="flex items-center justify-between p-3 bg-neutral-50 rounded-lg border border-neutral-200"
                     >
-                      Remove
-                    </Button>
-                  </li>
-                ))}
-              </ul>
+                      <span className="text-neutral-700">{ingredient}</span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeIngredient(index)}
+                        className="hover:bg-neutral-100"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-neutral-500 text-center py-8">No ingredients added yet</p>
+              )}
             </CardContent>
           </Card>
 
-          <Card className="mb-6">
+          {/* Instructions */}
+          <Card className="border-neutral-200 shadow-sm">
             <CardHeader>
-              <CardTitle>Instructions</CardTitle>
+              <CardTitle className="text-xl">Instructions</CardTitle>
+              <p className="text-sm text-neutral-600 mt-1">Add step-by-step cooking instructions</p>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex gap-2">
+              <div className="flex gap-2 items-start">
                 <Textarea
                   value={instructionInput}
                   onChange={(e) => setInstructionInput(e.target.value)}
-                  placeholder="Add instruction step"
+                  placeholder="e.g., Preheat the oven to 350°F..."
                   rows={2}
+                  className="flex-1"
                 />
-                <Button type="button" onClick={addInstruction}>
+                <Button type="button" onClick={addInstruction} className="gap-2 mt-0">
+                  <Plus className="h-4 w-4" />
                   Add
                 </Button>
               </div>
-              <ol className="space-y-2">
-                {formData.instructions.map((instruction, index) => (
-                  <li
-                    key={index}
-                    className="flex items-start justify-between p-2 bg-gray-100 rounded"
-                  >
-                    <span>
-                      <span className="font-semibold mr-2">{index + 1}.</span>
-                      {instruction}
-                    </span>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeInstruction(index)}
+              {formData.instructions.length > 0 ? (
+                <ol className="space-y-2">
+                  {formData.instructions.map((instruction, index) => (
+                    <li
+                      key={index}
+                      className="flex items-start justify-between p-3 bg-neutral-50 rounded-lg border border-neutral-200"
                     >
-                      Remove
-                    </Button>
-                  </li>
-                ))}
-              </ol>
+                      <span className="text-neutral-700">
+                        <span className="font-semibold text-primary mr-2">{index + 1}.</span>
+                        {instruction}
+                      </span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeInstruction(index)}
+                        className="hover:bg-neutral-100 flex-shrink-0 ml-2"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <p className="text-sm text-neutral-500 text-center py-8">No instructions added yet</p>
+              )}
             </CardContent>
           </Card>
 
-          <div className="flex gap-4">
-            <Button type="submit" disabled={loading}>
+          {/* Submit Buttons */}
+          <div className="flex gap-4 pt-4">
+            <Button type="submit" disabled={loading} size="lg" className="shadow-lg">
               {loading ? 'Creating...' : 'Create Recipe'}
             </Button>
             <Button
               type="button"
               variant="outline"
+              size="lg"
               onClick={() => router.push('/admin')}
             >
               Cancel
             </Button>
           </div>
         </form>
-      </main>
-    </div>
+      </div>
+    </PageLayout>
   )
 }
 

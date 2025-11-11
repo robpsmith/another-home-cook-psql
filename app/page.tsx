@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { Nav } from '@/components/nav'
+import { PageLayout } from '@/components/layout/PageLayout'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Clock, Users, ChefHat } from 'lucide-react'
 
 async function getRecipes() {
   try {
@@ -23,58 +24,90 @@ export default async function Home() {
   const recipes = await getRecipes()
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Nav />
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">Welcome to Recipe Blog</h1>
-          <p className="text-gray-600">Discover delicious recipes from around the world</p>
+    <PageLayout>
+      {/* Hero Section */}
+      <div className="text-center mb-12 md:mb-16">
+        <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-4">
+          <ChefHat className="h-4 w-4" />
+          <span>Welcome to Recipe Haven</span>
         </div>
+        <h1 className="mb-4 bg-gradient-to-r from-neutral-900 to-neutral-600 bg-clip-text text-transparent">
+          Discover Delicious Recipes
+        </h1>
+        <p className="text-lg md:text-xl text-neutral-600 max-w-2xl mx-auto">
+          Explore a world of flavors with our curated collection of recipes from home chefs around the globe
+        </p>
+      </div>
 
-        {recipes.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">No recipes yet. Check back soon!</p>
+      {/* Recipes Grid */}
+      {recipes.length === 0 ? (
+        <div className="text-center py-16 md:py-24">
+          <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-neutral-100 flex items-center justify-center">
+            <ChefHat className="h-12 w-12 text-neutral-400" />
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <h3 className="text-2xl font-semibold text-neutral-700 mb-2">No recipes yet</h3>
+          <p className="text-neutral-500 mb-8">Be the first to share your culinary creation!</p>
+          <Link 
+            href="/admin"
+            className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors font-medium"
+          >
+            <ChefHat className="h-5 w-5" />
+            Add Your First Recipe
+          </Link>
+        </div>
+      ) : (
+        <>
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="text-2xl font-semibold">Latest Recipes</h2>
+            <span className="text-neutral-600">{recipes.length} {recipes.length === 1 ? 'recipe' : 'recipes'}</span>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {recipes.map((recipe: any) => (
               <Link key={recipe.recipe_id} href={`/recipes/${recipe.slug}`}>
-                <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer">
+                <Card className="h-full hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border-neutral-200 overflow-hidden">
                   {recipe.image_url && (
-                    <div className="relative w-full h-48">
+                    <div className="relative w-full h-56 md:h-64 overflow-hidden bg-neutral-100">
                       <Image
                         src={recipe.image_url}
                         alt={recipe.title}
                         fill
-                        className="object-cover rounded-t-lg"
+                        className="object-cover hover:scale-105 transition-transform duration-300"
                       />
                     </div>
                   )}
-                  <CardHeader>
-                    <CardTitle>{recipe.title}</CardTitle>
+                  <CardHeader className="space-y-2">
+                    <CardTitle className="line-clamp-2 text-xl group-hover:text-primary transition-colors">
+                      {recipe.title}
+                    </CardTitle>
                     {recipe.description && (
-                      <CardDescription className="line-clamp-2">
+                      <CardDescription className="line-clamp-2 text-neutral-600">
                         {recipe.description}
                       </CardDescription>
                     )}
                   </CardHeader>
                   <CardContent>
-                    <div className="flex gap-4 text-sm text-gray-600">
+                    <div className="flex flex-wrap gap-4 text-sm text-neutral-600">
                       {recipe.prep_time_min && (
-                        <span>Prep: {recipe.prep_time_min} min</span>
+                        <div className="flex items-center gap-1.5">
+                          <Clock className="h-4 w-4 text-neutral-400" />
+                          <span>{recipe.prep_time_min + (recipe.cook_time_min || 0)} min</span>
+                        </div>
                       )}
-                      {recipe.cook_time_min && (
-                        <span>Cook: {recipe.cook_time_min} min</span>
+                      {recipe.servings && (
+                        <div className="flex items-center gap-1.5">
+                          <Users className="h-4 w-4 text-neutral-400" />
+                          <span>{recipe.servings} servings</span>
+                        </div>
                       )}
-                      {recipe.servings && <span>Serves: {recipe.servings}</span>}
                     </div>
                   </CardContent>
                 </Card>
               </Link>
             ))}
           </div>
-        )}
-      </main>
-    </div>
+        </>
+      )}
+    </PageLayout>
   )
 }

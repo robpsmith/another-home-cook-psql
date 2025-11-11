@@ -44,38 +44,61 @@
 }
 
 :root {
+  /* Modern Recipe Website Color Palette */
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  
+  /* Warm cream background for a cozy feel */
+  --background: oklch(0.99 0.005 85);
+  --foreground: oklch(0.25 0.01 40);
+  
+  /* Card with slight warmth */
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: oklch(0.25 0.01 40);
+  
+  /* Popovers */
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
+  --popover-foreground: oklch(0.25 0.01 40);
+  
+  /* Primary: Warm coral/terra cotta for CTAs and accents */
+  --primary: oklch(0.63 0.19 25);
+  --primary-foreground: oklch(1 0 0);
+  
+  /* Secondary: Fresh sage green */
+  --secondary: oklch(0.75 0.12 145);
+  --secondary-foreground: oklch(0.25 0.01 40);
+  
+  /* Muted: Light neutral with warmth */
+  --muted: oklch(0.96 0.005 85);
+  --muted-foreground: oklch(0.50 0.01 40);
+  
+  /* Accent: Warm peach */
+  --accent: oklch(0.94 0.04 65);
+  --accent-foreground: oklch(0.35 0.02 40);
+  
+  /* Destructive: Tomato red */
+  --destructive: oklch(0.58 0.22 25);
+  
+  /* Borders and inputs */
+  --border: oklch(0.90 0.01 85);
+  --input: oklch(0.90 0.01 85);
+  --ring: oklch(0.63 0.19 25);
+  
+  /* Chart colors - food inspired */
+  --chart-1: oklch(0.65 0.19 25); /* coral */
+  --chart-2: oklch(0.75 0.12 145); /* sage */
+  --chart-3: oklch(0.70 0.15 85); /* golden */
+  --chart-4: oklch(0.60 0.18 340); /* berry */
+  --chart-5: oklch(0.68 0.14 50); /* honey */
+  
+  /* Sidebar */
   --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar-foreground: oklch(0.25 0.01 40);
+  --sidebar-primary: oklch(0.63 0.19 25);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.96 0.005 85);
+  --sidebar-accent-foreground: oklch(0.25 0.01 40);
+  --sidebar-border: oklch(0.90 0.01 85);
+  --sidebar-ring: oklch(0.63 0.19 25);
 }
 
 .dark {
@@ -118,5 +141,31 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  /* Typography improvements for readability */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold tracking-tight;
+  }
+  
+  h1 {
+    @apply text-4xl md:text-5xl lg:text-6xl leading-tight;
+  }
+  
+  h2 {
+    @apply text-3xl md:text-4xl lg:text-5xl leading-tight;
+  }
+  
+  h3 {
+    @apply text-2xl md:text-3xl lg:text-4xl;
+  }
+  
+  h4 {
+    @apply text-xl md:text-2xl;
+  }
+  
+  p {
+    @apply leading-relaxed;
   }
 }

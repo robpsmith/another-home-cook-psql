@@ -1,22 +1,28 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Nav } from '@/components/nav'
+import { PageLayout } from '@/components/layout/PageLayout'
+import { ChefHat, Home } from 'lucide-react'
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Nav />
-      <main className="container mx-auto px-4 py-16 text-center">
-        <h1 className="text-6xl font-bold mb-4">404</h1>
-        <h2 className="text-2xl font-semibold mb-4">Recipe Not Found</h2>
-        <p className="text-gray-600 mb-8">
-          The recipe you're looking for doesn't exist or has been removed.
+    <PageLayout>
+      <div className="text-center py-16 md:py-24">
+        <div className="w-32 h-32 mx-auto mb-6 rounded-full bg-primary/10 flex items-center justify-center">
+          <ChefHat className="h-16 w-16 text-primary" />
+        </div>
+        <h1 className="text-6xl md:text-8xl font-bold mb-4 text-neutral-900">404</h1>
+        <h2 className="text-2xl md:text-3xl font-semibold mb-4 text-neutral-700">Recipe Not Found</h2>
+        <p className="text-lg text-neutral-600 mb-8 max-w-md mx-auto">
+          The recipe you're looking for doesn't exist or has been removed from our kitchen.
         </p>
         <Link href="/">
-          <Button>Go Home</Button>
+          <Button size="lg" className="gap-2 shadow-lg">
+            <Home className="h-5 w-5" />
+            Back to Home
+          </Button>
         </Link>
-      </main>
-    </div>
+      </div>
+    </PageLayout>
   )
 }
 
