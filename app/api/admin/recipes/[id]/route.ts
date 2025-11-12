@@ -25,6 +25,8 @@ export async function PUT(
       cook_time_min,
       servings,
       image_url,
+      blog_content,
+      blog_images,
       ingredients,
       instructions,
     } = body
@@ -39,6 +41,8 @@ export async function PUT(
         cook_time_min: cook_time_min ? parseInt(cook_time_min) : null,
         servings,
         image_url,
+        blog_content: blog_content || null,
+        blog_images: blog_images || [],
         ingredients: ingredients || [],
         instructions: instructions || [],
       },

@@ -3,8 +3,9 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { PageLayout } from '@/components/layout/PageLayout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Clock, Users, ChefHat, ArrowLeft } from 'lucide-react'
+import { ArrowLeft, ArrowDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { RecipeCard } from '@/components/RecipeCard'
 
 async function getRecipe(slug: string) {
   try {
@@ -46,13 +47,19 @@ export default async function RecipePage({
   return (
     <PageLayout maxWidth="narrow" className="!py-0">
       {/* Back Button */}
-      <div className="py-6">
+      <div className="py-6 flex justify-between items-center">
         <Link href="/">
           <Button variant="ghost" className="gap-2 -ml-2">
             <ArrowLeft className="h-4 w-4" />
             Back to Recipes
           </Button>
         </Link>
+        <a href="#recipe-card">
+          <Button variant="ghost" className="gap-2 -ml-2">
+            <ArrowDown className="h-4 w-4" />
+            Jump to Recipe
+          </Button>
+        </a>
       </div>
 
       <article className="pb-12">
@@ -79,61 +86,83 @@ export default async function RecipePage({
           )}
         </div>
 
-        {/* Recipe Meta Info */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-10">
-          {totalTime > 0 && (
-            <div className="flex items-center gap-3 p-4 bg-white rounded-xl border border-neutral-200">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <Clock className="h-5 w-5 text-primary" />
+        {/* Blog Content Section */}
+        {(recipe.blog_content || (recipe.blog_images && recipe.blog_images.length > 0)) && (
+          <div className="mb-8 space-y-6">
+            {/* Blog Content with Inline Images */}
+            {recipe.blog_content && (
+              <div className="prose prose-lg max-w-none">
+                {(() => {
+                  const blogImages = Array.isArray(recipe.blog_images) ? recipe.blog_images : []
+                  const content = recipe.blog_content
+                  
+                  // Split content by image placeholders
+                  const parts = content.split(/(\{\{image:\d+\}\})/g)
+                  
+                  const elements: JSX.Element[] = []
+                  
+                  parts.forEach((part, index) => {
+                    // Check if this part is an image placeholder
+                    const imageMatch = part.match(/\{\{image:(\d+)\}\}/)
+                    if (imageMatch) {
+                      const imageIndex = parseInt(imageMatch[1])
+                      const image = blogImages[imageIndex]
+                      
+                      if (image) {
+                        elements.push(
+                          <figure key={`img-${index}`} className="my-8 rounded-xl overflow-hidden shadow-lg">
+                            <div className="relative w-full aspect-[16/9]">
+                              <Image
+                                src={image.url}
+                                alt={image.alt}
+                                fill
+                                className="object-cover"
+                              />
+                            </div>
+                            {image.caption && (
+                              <figcaption className="p-4 bg-neutral-50 text-sm text-neutral-600 italic text-center">
+                                {image.caption}
+                              </figcaption>
+                            )}
+                          </figure>
+                        )
+                      }
+                    } else if (part.trim()) {
+                      // Regular text content - split by paragraphs
+                      part.split('\n\n').forEach((paragraph: string, pIndex: number) => {
+                        if (paragraph.trim()) {
+                          elements.push(
+                            <p key={`text-${index}-${pIndex}`} className="text-neutral-700 leading-relaxed mb-4">
+                              {paragraph.trim()}
+                            </p>
+                          )
+                        }
+                      })
+                    }
+                  })
+                  
+                  return elements
+                })()}
               </div>
-              <div>
-                <p className="text-xs text-neutral-500 font-medium uppercase tracking-wide">Total Time</p>
-                <p className="text-lg font-semibold text-neutral-900">{totalTime} min</p>
-              </div>
-            </div>
-          )}
-          {recipe.servings && (
-            <div className="flex items-center gap-3 p-4 bg-white rounded-xl border border-neutral-200">
-              <div className="p-2 bg-secondary/10 rounded-lg">
-                <Users className="h-5 w-5 text-secondary" />
-              </div>
-              <div>
-                <p className="text-xs text-neutral-500 font-medium uppercase tracking-wide">Servings</p>
-                <p className="text-lg font-semibold text-neutral-900">{recipe.servings}</p>
-              </div>
-            </div>
-          )}
-          <div className="flex items-center gap-3 p-4 bg-white rounded-xl border border-neutral-200 col-span-2 md:col-span-1">
-            <div className="p-2 bg-accent/50 rounded-lg">
-              <ChefHat className="h-5 w-5 text-neutral-700" />
-            </div>
-            <div>
-              <p className="text-xs text-neutral-500 font-medium uppercase tracking-wide">Difficulty</p>
-              <p className="text-lg font-semibold text-neutral-900">Medium</p>
-            </div>
+            )}
           </div>
-        </div>
+        )}
 
-        {/* Ingredients & Instructions */}
+        {/* Recipe Card with Ingredients */}
+        {ingredients.length > 0 && (
+          <div id="recipe-card" className="mb-8 scroll-mt-6">
+            <RecipeCard
+              prepTime={recipe.prep_time_min || undefined}
+              totalTime={totalTime || undefined}
+              servings={recipe.servings || undefined}
+              ingredients={ingredients}
+              recipeId={recipe.recipe_id}
+            />
+          </div>
+        )}
+
+        {/* Instructions */}
         <div className="space-y-8">
-          {ingredients.length > 0 && (
-            <Card className="border-neutral-200 shadow-sm">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-2xl">Ingredients</CardTitle>
-                <p className="text-sm text-neutral-600 mt-2">Everything you need to make this recipe</p>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-3">
-                  {ingredients.map((ingredient: string, index: number) => (
-                    <li key={index} className="flex items-start gap-3 group">
-                      <span className="mt-1.5 w-2 h-2 rounded-full bg-primary flex-shrink-0 group-hover:scale-125 transition-transform" />
-                      <span className="text-neutral-700 leading-relaxed">{ingredient}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          )}
 
           {instructions.length > 0 && (
             <Card className="border-neutral-200 shadow-sm">

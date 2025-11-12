@@ -10,7 +10,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand Section */}
           <div className="md:col-span-2">
-            <h3 className="text-lg font-bold text-neutral-900 mb-3">Recipe Haven</h3>
+            <h3 className="text-lg font-bold text-neutral-900 mb-3">Another Home Cook</h3>
             <p className="text-neutral-600 text-sm leading-relaxed max-w-md">
               Discover and share delicious recipes from around the world. 
               Join our community of food lovers and home chefs creating magic in their kitchens.
@@ -89,7 +89,7 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="mt-8 pt-8 border-t border-neutral-200 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-neutral-600 text-center md:text-left">
-            © {currentYear} Recipe Haven. Made with <Heart className="h-4 w-4 inline text-red-500" /> by food lovers.
+            © {currentYear} Another Home Cook. Made with <Heart className="h-4 w-4 inline text-red-500" /> by food lovers.
           </p>
           <div className="flex gap-6 text-sm">
             <Link href="/privacy" className="text-neutral-600 hover:text-primary transition-colors">

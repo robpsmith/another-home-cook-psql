@@ -20,22 +20,16 @@ async function getRecipes() {
   }
 }
 
-export default async function Home() {
+export default async function RecipesPage() {
   const recipes = await getRecipes()
 
   return (
     <PageLayout>
-      {/* Hero Section */}
-      <div className="text-center mb-12 md:mb-16">
-        <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-4">
-          <ChefHat className="h-4 w-4" />
-          <span>Welcome to Another Home Cook</span>
-        </div>
-        <h1 className="mb-4 bg-gradient-to-r from-neutral-900 to-neutral-600 bg-clip-text text-transparent">
-          Discover Delicious Recipes
-        </h1>
-        <p className="text-lg md:text-xl text-neutral-600 max-w-2xl mx-auto">
-          Explore a world of flavors with our curated collection of recipes from home chefs around the globe
+      {/* Header */}
+      <div className="mb-8 md:mb-12">
+        <h1 className="mb-4">All Recipes</h1>
+        <p className="text-lg text-neutral-600">
+          Browse our complete collection of delicious recipes
         </p>
       </div>
 
@@ -58,8 +52,9 @@ export default async function Home() {
       ) : (
         <>
           <div className="mb-6 flex items-center justify-between">
-            <h2 className="text-2xl font-semibold">Latest Recipes</h2>
-            <span className="text-neutral-600">{recipes.length} {recipes.length === 1 ? 'recipe' : 'recipes'}</span>
+            <h2 className="text-xl font-semibold text-neutral-700">
+              {recipes.length} {recipes.length === 1 ? 'Recipe' : 'Recipes'}
+            </h2>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
@@ -111,3 +106,4 @@ export default async function Home() {
     </PageLayout>
   )
 }
+

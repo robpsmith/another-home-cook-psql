@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -10,7 +10,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { ArrowLeft, Plus, X, Image as ImageIcon } from 'lucide-react'
+import { ArrowLeft, Image as ImageIcon, Plus, X } from 'lucide-react'
+import { IngredientInput } from '@/components/IngredientInput'
+import type { Ingredient } from '@/lib/types'
+import { parseIngredient } from '@/lib/ingredient-converter'
 
 export default function EditRecipePage({
   params,
@@ -30,11 +33,14 @@ export default function EditRecipePage({
     cook_time_min: '',
     servings: '',
     image_url: '',
-    ingredients: [] as string[],
+    blog_content: '',
+    blog_images: [] as Array<{ url: string; alt: string; caption: string }>,
+    ingredients: [] as Ingredient[],
     instructions: [] as string[],
   })
-  const [ingredientInput, setIngredientInput] = useState('')
   const [instructionInput, setInstructionInput] = useState('')
+  const [blogImageInput, setBlogImageInput] = useState({ alt: '', caption: '' })
+  const blogContentTextareaRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
     params.then((p) => setId(p.id))
@@ -69,8 +75,30 @@ export default function EditRecipePage({
             cook_time_min: recipe.cook_time_min?.toString() || '',
             servings: recipe.servings || '',
             image_url: recipe.image_url || '',
+            blog_content: recipe.blog_content || '',
+            blog_images: Array.isArray(recipe.blog_images) ? recipe.blog_images : [],
             ingredients: Array.isArray(recipe.ingredients)
-              ? recipe.ingredients
+              ? recipe.ingredients.map((ing: any) => {
+                  // Convert legacy string format to structured format
+                  if (typeof ing === 'string') {
+                    const parsed = parseIngredient(ing)
+                    if (parsed.amount && parsed.unit) {
+                      return {
+                        amount: parsed.amount,
+                        unit: parsed.unit,
+                        name: parsed.ingredient,
+                      } as Ingredient
+                    }
+                    // If parsing failed, return as name only
+                    return {
+                      amount: 1,
+                      unit: '',
+                      name: ing,
+                    } as Ingredient
+                  }
+                  // Already structured
+                  return ing as Ingredient
+                })
               : [],
             instructions: Array.isArray(recipe.instructions)
               ? recipe.instructions
@@ -98,22 +126,6 @@ export default function EditRecipePage({
     )
   }
 
-  const addIngredient = () => {
-    if (ingredientInput.trim()) {
-      setFormData({
-        ...formData,
-        ingredients: [...formData.ingredients, ingredientInput.trim()],
-      })
-      setIngredientInput('')
-    }
-  }
-
-  const removeIngredient = (index: number) => {
-    setFormData({
-      ...formData,
-      ingredients: formData.ingredients.filter((_, i) => i !== index),
-    })
-  }
 
   const addInstruction = () => {
     if (instructionInput.trim()) {
@@ -158,6 +170,91 @@ export default function EditRecipePage({
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleBlogImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setLoading(true)
+    try {
+      const uploadFormData = new FormData()
+      uploadFormData.append('file', file)
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: uploadFormData,
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        // Use alt text from input, or generate from filename, or use default
+        const altText = blogImageInput.alt || file.name.replace(/\.[^/.]+$/, '') || 'Blog image'
+        setFormData((prev) => ({
+          ...prev,
+          blog_images: [
+            ...prev.blog_images,
+            {
+              url: data.url,
+              alt: altText,
+              caption: blogImageInput.caption || '',
+            },
+          ],
+        }))
+        // Clear the input but keep alt/caption for next upload if user wants
+        // Reset file input
+        e.target.value = ''
+      } else {
+        alert('Failed to upload image')
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error)
+      alert('Failed to upload image')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const removeBlogImage = (index: number) => {
+    // Reindex remaining image placeholders
+    let updatedContent = formData.blog_content
+    // Remove the placeholder for the deleted image
+    updatedContent = updatedContent.replace(new RegExp(`\\{\\{image:${index}\\}\\}`, 'g'), '')
+    // Update placeholders for images after the deleted one
+    for (let i = formData.blog_images.length - 1; i > index; i--) {
+      updatedContent = updatedContent.replace(
+        new RegExp(`\\{\\{image:${i}\\}\\}`, 'g'),
+        `{{image:${i - 1}}}`
+      )
+    }
+    setFormData({
+      ...formData,
+      blog_images: formData.blog_images.filter((_, i) => i !== index),
+      blog_content: updatedContent,
+    })
+  }
+
+  const insertImagePlaceholder = (imageIndex: number) => {
+    const textarea = blogContentTextareaRef.current
+    if (!textarea) return
+
+    const start = textarea.selectionStart
+    const end = textarea.selectionEnd
+    const text = formData.blog_content
+    const placeholder = `\n\n{{image:${imageIndex}}}\n\n`
+    
+    const newText = text.substring(0, start) + placeholder + text.substring(end)
+    setFormData({
+      ...formData,
+      blog_content: newText,
+    })
+
+    // Set cursor position after the inserted placeholder
+    setTimeout(() => {
+      textarea.focus()
+      const newPosition = start + placeholder.length
+      textarea.setSelectionRange(newPosition, newPosition)
+    }, 0)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -339,54 +436,143 @@ export default function EditRecipePage({
             </CardContent>
           </Card>
 
+          {/* Blog Content */}
+          <Card className="border-neutral-200 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-xl">Blog Content</CardTitle>
+              <p className="text-sm text-neutral-600 mt-1">Add blog-style content that appears before the recipe card</p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="blog_content" className="text-neutral-700">Blog Content</Label>
+                <Textarea
+                  ref={blogContentTextareaRef}
+                  id="blog_content"
+                  value={formData.blog_content}
+                  onChange={(e) =>
+                    setFormData({ ...formData, blog_content: e.target.value })
+                  }
+                  rows={8}
+                  placeholder="Write your blog content here... You can add multiple paragraphs, tips, and stories about this recipe. Use {{image:0}} to insert images at specific positions."
+                  className="mt-1.5"
+                />
+                <p className="text-xs text-neutral-500 mt-1">
+                  Use line breaks to separate paragraphs. Click "Insert" next to uploaded images to place them in your content at the cursor position.
+                </p>
+              </div>
+
+              {/* Blog Images */}
+              <div>
+                <Label className="text-neutral-700 mb-2 block">Additional Blog Images</Label>
+                <div className="space-y-3 mb-4">
+                  <div>
+                    <Label htmlFor="blog_image_file" className="text-sm text-neutral-600 mb-2 block">Upload Image</Label>
+                    <Input
+                      id="blog_image_file"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleBlogImageUpload}
+                      disabled={loading}
+                      className="mt-1"
+                    />
+                    <p className="text-xs text-neutral-500 mt-1">Upload an image first, then add alt text and caption below</p>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="blog_image_alt" className="text-sm text-neutral-600">Alt Text (Optional)</Label>
+                      <Input
+                        id="blog_image_alt"
+                        value={blogImageInput.alt}
+                        onChange={(e) =>
+                          setBlogImageInput({ ...blogImageInput, alt: e.target.value })
+                        }
+                        placeholder="Describe the image for accessibility"
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="blog_image_caption" className="text-sm text-neutral-600">Caption (Optional)</Label>
+                      <Input
+                        id="blog_image_caption"
+                        value={blogImageInput.caption}
+                        onChange={(e) =>
+                          setBlogImageInput({ ...blogImageInput, caption: e.target.value })
+                        }
+                        placeholder="Image caption"
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {formData.blog_images.length > 0 ? (
+                  <div className="space-y-3">
+                    {formData.blog_images.map((image, index) => (
+                      <div
+                        key={index}
+                        className="flex items-start gap-4 p-3 bg-neutral-50 rounded-lg border border-neutral-200"
+                      >
+                        <img
+                          src={image.url}
+                          alt={image.alt}
+                          className="w-24 h-24 object-cover rounded flex-shrink-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-neutral-900 truncate">
+                            Image {index + 1}: {image.alt}
+                          </p>
+                          {image.caption && (
+                            <p className="text-sm text-neutral-600 mt-1">{image.caption}</p>
+                          )}
+                          <p className="text-xs text-neutral-500 mt-1">
+                            Placeholder: <code className="bg-white px-1 py-0.5 rounded text-xs">{`{{image:${index}}}`}</code>
+                          </p>
+                        </div>
+                        <div className="flex flex-col gap-2 flex-shrink-0">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => insertImagePlaceholder(index)}
+                            className="text-xs"
+                          >
+                            Insert
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeBlogImage(index)}
+                            className="hover:bg-neutral-100"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-neutral-500 text-center py-4 border-2 border-dashed border-neutral-200 rounded-lg">
+                    No blog images added yet
+                  </p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Ingredients */}
           <Card className="border-neutral-200 shadow-sm">
             <CardHeader>
               <CardTitle className="text-xl">Ingredients</CardTitle>
               <p className="text-sm text-neutral-600 mt-1">List all the ingredients needed</p>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex gap-2">
-                <Input
-                  value={ingredientInput}
-                  onChange={(e) => setIngredientInput(e.target.value)}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault()
-                      addIngredient()
-                    }
-                  }}
-                  placeholder="e.g., 2 cups all-purpose flour"
-                  className="flex-1"
-                />
-                <Button type="button" onClick={addIngredient} className="gap-2">
-                  <Plus className="h-4 w-4" />
-                  Add
-                </Button>
-              </div>
-              {formData.ingredients.length > 0 ? (
-                <ul className="space-y-2">
-                  {formData.ingredients.map((ingredient, index) => (
-                    <li
-                      key={index}
-                      className="flex items-center justify-between p-3 bg-neutral-50 rounded-lg border border-neutral-200"
-                    >
-                      <span className="text-neutral-700">{ingredient}</span>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeIngredient(index)}
-                        className="hover:bg-neutral-100"
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-sm text-neutral-500 text-center py-8">No ingredients added yet</p>
-              )}
+            <CardContent>
+              <IngredientInput
+                ingredients={formData.ingredients}
+                onIngredientsChange={(ingredients) =>
+                  setFormData({ ...formData, ingredients })
+                }
+              />
             </CardContent>
           </Card>
 

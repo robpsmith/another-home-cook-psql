@@ -14,8 +14,8 @@ export function Header() {
         {/* Logo / Brand */}
         <Link href="/" className="flex items-center gap-2 font-bold text-xl md:text-2xl text-neutral-900 hover:text-primary transition-colors">
           <ChefHat className="h-7 w-7 text-primary" />
-          <span className="hidden sm:inline">Recipe Haven</span>
-          <span className="sm:hidden">RH</span>
+          <span className="hidden sm:inline">Another Home Cook</span>
+          <span className="sm:hidden">AHC</span>
         </Link>
 
         {/* Navigation Links */}

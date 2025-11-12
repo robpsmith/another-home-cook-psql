@@ -21,6 +21,8 @@ model Recipe {
   image_url      String?   @db.VarChar(255)
   ingredients    Json?     // Array of ingredient strings
   instructions   Json?     // Array of instruction step objects
+  blog_content   String?   @db.Text // Rich blog content before recipe card
+  blog_images    Json?     // Array of additional blog images {url, alt, caption}
   published_date DateTime? @db.Timestamptz(6)
   updated_date   DateTime? @updatedAt @db.Timestamptz(6)
 
