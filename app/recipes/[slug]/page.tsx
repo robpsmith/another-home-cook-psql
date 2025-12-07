@@ -1,3 +1,4 @@
+import React from 'react'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -99,9 +100,9 @@ export default async function RecipePage({
                   // Split content by image placeholders
                   const parts = content.split(/(\{\{image:\d+\}\})/g)
                   
-                  const elements: JSX.Element[] = []
+                  const elements: React.JSX.Element[] = []
                   
-                  parts.forEach((part, index) => {
+                  parts.forEach((part: string, index: number) => {
                     // Check if this part is an image placeholder
                     const imageMatch = part.match(/\{\{image:(\d+)\}\}/)
                     if (imageMatch) {
